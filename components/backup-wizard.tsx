@@ -125,6 +125,9 @@ export function BackupWizard() {
     } finally {
       setRunning(false);
       abortRef.current = null;
+      if (!controller.signal.aborted) {
+        setStep("download");
+      }
     }
   }
 
