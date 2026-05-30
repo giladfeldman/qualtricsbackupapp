@@ -1,36 +1,68 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Qualtrics Backup App
 
-## Getting Started
+Public web interface for backing up an entire Qualtrics account — no R required.
 
-First, run the development server:
+This app ports the workflow from [giladfeldman/qualtrics_backup](https://github.com/giladfeldman/qualtrics_backup):
+
+- `.qsf` survey definition files
+- Response data as CSV
+- YAML metadata per survey
+- JSON question maps
+- A survey catalog JSON file
+
+SPSS `.sav` export is not included in v1 (CSV opens in Excel and SPSS).
+
+## Why this exists
+
+The R script works well if you use RStudio, but many researchers do not. Qualtrics also blocks direct browser calls to its API (CORS), so this app uses a **small, stateless proxy** on Vercel while keeping your token and backup files out of storage.
+
+**The entire codebase is public so you can verify we store nothing.** See [SECURITY.md](SECURITY.md) and [PRIVACY.md](PRIVACY.md).
+
+## Quick start (local)
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000), enter your Qualtrics datacenter ID and API token, select surveys, and download a ZIP.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Deploy
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Deploy the `qualtricsbackupapp` folder to Vercel. No environment variables are required for user tokens.
 
-## Learn More
+```bash
+npm run build
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Project layout
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+app/                  Next.js pages and API proxy
+components/           Backup wizard UI
+lib/qualtrics/        Qualtrics API client
+lib/backup/           Backup orchestration (retries, rate limits)
+lib/zip/              Client-side ZIP builder
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Output structure
 
-## Deploy on Vercel
+```
+backup.zip
+├── survey_catalog.json
+├── qsf/
+├── data/response_data-SV_xxx.csv
+├── metadata/metadata-SV_xxx.yaml
+└── question_data/question_data-SV_xxx.json
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Development
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+npm run lint
+npm test
+```
+
+## License
+
+Same spirit as the original R script — use at your own risk, especially with large accounts. The app mirrors the R script's sequential export with 5-second QSF rate limiting and up to 5 retries per survey.

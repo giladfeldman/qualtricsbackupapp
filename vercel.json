@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "app/api/qualtrics/proxy/route.ts": {
+      "maxDuration": 60
+    }
+  }
+}
